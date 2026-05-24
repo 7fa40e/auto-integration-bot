@@ -1,8 +1,31 @@
 export async function POST(req: Request) {
   const body = await req.json();
 
-  console.log("Webhook received");
-  console.log(JSON.stringify(body, null, 2));
+  const events = body.events;
+
+  for (const event of events) {
+    if (event.type === "message" && event.message.type === "image") {
+      const messageId = event.message.id;
+
+      console.log("Image received");
+      console.log("Message ID:", messageId);
+
+      const imageResponse = await fetch(
+        `https://api-data.line.me/v2/bot/message/${messageId}/content`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.LINE_CHANNEL_ACCESS_TOKEN}`,
+          },
+        },
+      );
+
+      console.log("Image fetch status:", imageResponse.status);
+
+      const arrayBuffer = await imageResponse.arrayBuffer();
+
+      console.log("Image size:", arrayBuffer.byteLength);
+    }
+  }
 
   return new Response("OK", {
     status: 200,
