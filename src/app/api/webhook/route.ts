@@ -32,6 +32,33 @@ export async function POST(req: Request) {
       const arrayBuffer = await imageResponse.arrayBuffer();
 
       console.log("Image size:", arrayBuffer.byteLength);
+
+      const imagePart = {
+        inlineData: {
+          data: Buffer.from(arrayBuffer).toString("base64"),
+          mimeType: "image/jpeg",
+        },
+      };
+
+      const result = await model.generateContent([
+        `
+このレシート画像から以下をJSON形式で抽出してください。
+
+{
+  "store": "",
+  "date": "",
+  "total": 0
+}
+
+JSONのみ返してください。
+`,
+        imagePart,
+      ]);
+
+      const response = await result.response;
+      const text = response.text();
+
+      console.log(text);
     }
   }
 
